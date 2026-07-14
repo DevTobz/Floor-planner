@@ -106,6 +106,16 @@ Only use these valid catalog IDs and default dimensions (width x height x depth 
 
 CRITICAL: Keep coordinates in meters. Try to keep layouts aligned to a 0.5m grid where possible.
 Always make sure walls align with room corners. If you add a room, add the 4 walls surrounding it!
+
+### Scaling and Transformation Instructions
+When the user asks to scale the environment, layout, or design (e.g., "scale the design times 3", "make the layout twice as big", "scale by 0.5", "scale times 3 times 2"):
+1. Calculate the overall scaling factor from the request (e.g., "times 3" = 3, "twice as big" = 2, "half size" = 0.5, "times 3 times 2" = 6).
+2. For EVERY existing element in the current project state, output an "update" mutation:
+   - **Rooms**: Multiply all corner coordinates in the \`corners\` array by the factor: \`x = x * factor\`, \`y = y * factor\`.
+   - **Walls**: Multiply both \`start\` and \`end\` coordinates by the factor: \`x = x * factor\`, \`y = y * factor\`. Leave thickness and height unchanged unless explicitly asked.
+   - **Doors & Windows**: Multiply \`offsetAlongWall\` by the factor. Also scale the \`width\` by the factor so they span the new scaled wall length appropriately.
+   - **Furniture**: Multiply the position coordinates (\`transform.position.x\` and \`transform.position.z\`) by the factor so they remain in the correct relative positions of the scaled rooms. Do NOT change their physical size or scale unless the user explicitly requested the furniture items themselves to be larger; keep furniture dimensions standard to avoid oversized assets, only scaling their spatial positions.
+
 You must output ONLY raw JSON. Do not use markdown blocks (\`\`\`json) or add any conversational text outside the JSON object.`;
 
 export async function POST(req: Request) {
@@ -114,18 +124,29 @@ export async function POST(req: Request) {
     
     // Check for OpenRouter Key (with direct .env file fallback)
     let openRouterKey = process.env.OPENROUTER_API_KEY;
+    let openRouterModel = process.env.OPENROUTER_MODEL;
 
-    if (!openRouterKey) {
+    if (!openRouterKey || !openRouterModel) {
       try {
         const envPath = path.resolve(process.cwd(), ".env");
         if (fs.existsSync(envPath)) {
           const envContent = fs.readFileSync(envPath, "utf-8");
-          const match = envContent.match(/OPENROUTER_API_KEY=(.*)/);
-          if (match) openRouterKey = match[1].trim();
+          if (!openRouterKey) {
+            const match = envContent.match(/OPENROUTER_API_KEY=(.*)/);
+            if (match) openRouterKey = match[1].trim();
+          }
+          if (!openRouterModel) {
+            const match = envContent.match(/OPENROUTER_MODEL=(.*)/);
+            if (match) openRouterModel = match[1].trim();
+          }
         }
       } catch (err) {
-        console.error("Failed to read OPENROUTER_API_KEY from .env file dynamically:", err);
+        console.error("Failed to read environment variables from .env file dynamically:", err);
       }
+    }
+
+    if (!openRouterModel) {
+      openRouterModel = "google/gemini-2.5-pro";
     }
 
     if (!openRouterKey) {
@@ -136,16 +157,17 @@ export async function POST(req: Request) {
     }
 
     // Use OpenRouter (OpenAI-compatible)
+    const referer = req.headers.get("referer") || "https://floor-plannerai.netlify.app";
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${openRouterKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
+        "HTTP-Referer": referer,
         "X-Title": "BuildAI Studio"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: openRouterModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Current Project State: ${JSON.stringify(project)}\n\nUser Command: ${message}` }

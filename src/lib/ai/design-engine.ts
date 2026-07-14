@@ -72,6 +72,12 @@ export async function processCommand(input: string, store: StoreActions): Promis
               store.deleteRoom(m.id);
             } else if (m.type === "wall") {
               store.deleteWall(m.id);
+            } else if (m.type === "door") {
+              (store as any).deleteDoor?.(m.id);
+            } else if (m.type === "window") {
+              (store as any).deleteWindow?.(m.id);
+            } else if (m.type === "roof") {
+              (store as any).deleteRoof?.(m.id);
             }
             appliedMutations.push({ action: "delete", objectType: m.type, objectId: m.id, objectName: m.type });
           } else if (m.action === "update" && m.id) {
@@ -81,6 +87,12 @@ export async function processCommand(input: string, store: StoreActions): Promis
               useProjectStore.getState().updateRoom(m.id, m.data);
             } else if (m.type === "wall") {
               useProjectStore.getState().updateWall(m.id, m.data);
+            } else if (m.type === "door") {
+              useProjectStore.getState().updateDoor(m.id, m.data);
+            } else if (m.type === "window") {
+              useProjectStore.getState().updateWindow(m.id, m.data);
+            } else if (m.type === "roof") {
+              useProjectStore.getState().updateRoof(m.id, m.data);
             }
             appliedMutations.push({ action: "update", objectType: m.type, objectId: m.id, objectName: m.type });
           }

@@ -7,12 +7,15 @@ const envFile = fs.readFileSync(envPath, 'utf-8');
 const apiKeyMatch = envFile.match(/OPENROUTER_API_KEY=(.*)/);
 const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
 
+const modelMatch = envFile.match(/OPENROUTER_MODEL=(.*)/);
+const model = modelMatch ? modelMatch[1].trim() : "google/gemini-2.5-pro";
+
 if (!apiKey) {
   console.error("❌ OPENROUTER_API_KEY not found in .env");
   process.exit(1);
 }
 
-console.log("Found OpenRouter API Key! Testing connection...");
+console.log(`Found OpenRouter API Key! Testing connection with model: ${model}...`);
 
 async function testKey() {
   try {
@@ -21,11 +24,11 @@ async function testKey() {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
+        "HTTP-Referer": "https://floor-plannerai.netlify.app",
         "X-Title": "BuildAI Studio"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: model,
         messages: [
           { role: "user", content: "Hello, this is a connection test. Please reply with the exact word: 'SUCCESS'." }
         ]

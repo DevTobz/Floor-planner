@@ -23,6 +23,8 @@ interface AuthState {
   signUp: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
+  resetPassword: (email: string, redirectTo: string) => Promise<boolean>;
+  updatePassword: (password: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -129,6 +131,38 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } catch (e) {
       set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  resetPassword: async (email: string, redirectTo: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+      set({ isLoading: false, error: null });
+      return true;
+    } catch (e: any) {
+      set({ error: e.message || 'An unexpected error occurred.', isLoading: false });
+      return false;
+    }
+  },
+
+  updatePassword: async (password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        set({ error: error.message, isLoading: false });
+        return false;
+      }
+      set({ isLoading: false, error: null });
+      return true;
+    } catch (e: any) {
+      set({ error: e.message || 'An unexpected error occurred.', isLoading: false });
+      return false;
     }
   },
 }));

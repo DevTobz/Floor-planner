@@ -9,10 +9,30 @@ export default function HomePage() {
   const { isAuthenticated, isLoading, checkSession } = useAuthStore();
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isRecovery =
+        window.location.hash.includes("type=recovery") ||
+        window.location.hash.includes("recovery") ||
+        window.location.search.includes("type=recovery");
+
+      if (isRecovery) {
+        router.replace(`/login${window.location.search}${window.location.hash}`);
+        return;
+      }
+    }
     checkSession();
-  }, [checkSession]);
+  }, [checkSession, router]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isRecovery =
+        window.location.hash.includes("type=recovery") ||
+        window.location.hash.includes("recovery") ||
+        window.location.search.includes("type=recovery");
+
+      if (isRecovery) return;
+    }
+
     if (!isLoading) {
       if (isAuthenticated) {
         router.replace("/dashboard");

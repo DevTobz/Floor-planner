@@ -10,7 +10,7 @@ type LoginMode = "signin" | "signup" | "forgot" | "recovery";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, signUp, resetPassword, updatePassword, isAuthenticated, error, checkSession } = useAuthStore();
+  const { login, signUp, resetPassword, updatePassword, logout, isAuthenticated, error, checkSession } = useAuthStore();
   const [email, setEmail] = useState("demo@buildai.studio");
   const [password, setPassword] = useState("demo123");
   const [name, setName] = useState("");
@@ -25,7 +25,13 @@ export default function LoginPage() {
 
   // Handle automatic redirect only if we are not resetting/recovering password
   useEffect(() => {
-    if (isAuthenticated && mode !== "recovery") {
+    const isRecoveryMode = typeof window !== "undefined" && (
+      window.location.hash.includes("type=recovery") ||
+      window.location.hash.includes("recovery") ||
+      window.location.search.includes("type=recovery")
+    );
+
+    if (isAuthenticated && mode !== "recovery" && !isRecoveryMode) {
       router.replace("/dashboard");
     }
   }, [isAuthenticated, mode, router]);
@@ -76,6 +82,7 @@ export default function LoginPage() {
     } else if (mode === "recovery") {
       success = await updatePassword(password);
       if (success) {
+        await logout();
         setSuccessMessage("Password updated successfully! You can now sign in.");
         setMode("signin");
         setPassword("");

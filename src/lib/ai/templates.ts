@@ -141,6 +141,73 @@ export function getOfficeLayout(): BuildingTemplate {
   };
 }
 
+export function getFruitShopLayout(): BuildingTemplate {
+  const w1 = wallId(), w2 = wallId(), w3 = wallId(), w4 = wallId(), w5 = wallId();
+
+  return {
+    name: 'Fruit Shop',
+    description: 'A modern fruit shop layout optimized for 17 ft x 9 ft dimensions.',
+    walls: [
+      // Outer walls (17ft x 9ft => 5.2m x 2.7m)
+      { id: w1, name: 'North Wall', start: { x: 0, y: 0 }, end: { x: 5.2, y: 0 } },
+      { id: w2, name: 'East Wall (Rear)', start: { x: 5.2, y: 0 }, end: { x: 5.2, y: 2.7 } },
+      { id: w3, name: 'South Wall', start: { x: 5.2, y: 2.7 }, end: { x: 0, y: 2.7 } },
+      { id: w4, name: 'West Wall (Front Entrance)', start: { x: 0, y: 2.7 }, end: { x: 0, y: 0 } },
+      // Inner divider between Customer Zone and Staff Prep Area
+      { id: w5, name: 'Staff Divider Counter', start: { x: 3.8, y: 0 }, end: { x: 3.8, y: 2.7 } },
+    ],
+    rooms: [
+      { 
+        name: 'Customer Zone', 
+        label: 'Customer Zone', 
+        corners: [{ x: 0, y: 0 }, { x: 3.8, y: 0 }, { x: 3.8, y: 2.7 }, { x: 0, y: 2.7 }], 
+        material: { color: '#f0fdf4', roughness: 0.8, metalness: 0, opacity: 1, name: 'Warm Oak Tile' } 
+      },
+      { 
+        name: 'Staff Prep Area', 
+        label: 'Staff Prep Area', 
+        corners: [{ x: 3.8, y: 0 }, { x: 5.2, y: 0 }, { x: 5.2, y: 2.7 }, { x: 3.8, y: 2.7 }], 
+        material: { color: '#ffffff', roughness: 0.6, metalness: 0, opacity: 1, name: 'Hygienic Vinyl' } 
+      },
+    ],
+    doors: [
+      // Main Entrance on the 9-foot (West) side
+      { name: 'Entrance', wallId: w4, width: 1.2, height: 2.1, offsetAlongWall: 0.75, openDirection: 'double', style: 'hinged' },
+      // Staff door through partition
+      { name: 'Staff Access Door', wallId: w5, width: 0.8, height: 2.1, offsetAlongWall: 1.9, openDirection: 'right', style: 'hinged' },
+    ],
+    windows: [
+      // Large storefront display windows on the front (West) wall next to entrance
+      { name: 'Storefront Window', wallId: w4, width: 0.8, height: 1.8, sillHeight: 0.3, offsetAlongWall: 0.1, style: 'single' },
+    ],
+    furniture: [
+      // --- Customer Zone ---
+      // Display shelf along North Wall
+      { name: 'Fruit Rack (North)', catalogId: 'bookshelf', category: 'living-room', width: 1.5, height: 1.8, depth: 0.35, transform: { position: { x: 1.2, y: 0, z: 0.2 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#16a34a', roughness: 0.8, metalness: 0, opacity: 1, name: 'Green Steel Frame' } },
+      // Display shelf along South Wall
+      { name: 'Fruit Rack (South)', catalogId: 'bookshelf', category: 'living-room', width: 1.5, height: 1.8, depth: 0.35, transform: { position: { x: 1.2, y: 0, z: 2.5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#16a34a', roughness: 0.8, metalness: 0, opacity: 1, name: 'Green Steel Frame' } },
+      // Central Display Island
+      { name: 'Seasonal Fruit Island', catalogId: 'coffee-table', category: 'living-room', width: 1.2, height: 0.6, depth: 0.6, transform: { position: { x: 2.3, y: 0, z: 1.35 }, rotation: { x: 0, y: 90, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#b45309', roughness: 0.5, metalness: 0, opacity: 1, name: 'Warm Bamboo' } },
+      // Flower Display near entrance
+      { name: 'Flower Display Planter', catalogId: 'planter', category: 'outdoor', width: 0.5, height: 0.6, depth: 0.5, transform: { position: { x: 0.4, y: 0, z: 2.3 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#22c55e', roughness: 0.9, metalness: 0, opacity: 1, name: 'Eco Plastic' } },
+      // Chiller for customers
+      { name: 'Juice Chiller Fridge', catalogId: 'fridge', category: 'kitchen', width: 0.7, height: 1.8, depth: 0.7, transform: { position: { x: 3.3, y: 0, z: 0.45 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#ffffff', roughness: 0.2, metalness: 0.8, opacity: 1, name: 'Glass Chiller' } },
+      // Seating Area: Table and chairs
+      { name: 'Customer Table', catalogId: 'patio-table', category: 'outdoor', width: 0.8, height: 0.75, depth: 0.8, transform: { position: { x: 3.1, y: 0, z: 2.2 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#d97706', roughness: 0.6, metalness: 0, opacity: 1, name: 'Teak Wood' } },
+      { name: 'Customer Chair 1', catalogId: 'patio-chair', category: 'outdoor', width: 0.5, height: 0.8, depth: 0.5, transform: { position: { x: 2.6, y: 0, z: 2.2 }, rotation: { x: 0, y: 90, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#ffffff', roughness: 0.7, metalness: 0.1, opacity: 1, name: 'White Rattan' } },
+      { name: 'Customer Chair 2', catalogId: 'patio-chair', category: 'outdoor', width: 0.5, height: 0.8, depth: 0.5, transform: { position: { x: 3.1, y: 0, z: 1.6 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#ffffff', roughness: 0.7, metalness: 0.1, opacity: 1, name: 'White Rattan' } },
+      
+      // --- Staff Preparation Area ---
+      // Preparation Counter and sink
+      { name: 'Fruit Prep Counter', catalogId: 'kitchen-counter', category: 'kitchen', width: 1.8, height: 0.9, depth: 0.6, transform: { position: { x: 4.8, y: 0, z: 0.5 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#f8fafc', roughness: 0.3, metalness: 0.6, opacity: 1, name: 'Stainless Steel Counter' } },
+      // Storage fridge within staff area
+      { name: 'Staff Storage Fridge', catalogId: 'fridge', category: 'kitchen', width: 0.7, height: 1.8, depth: 0.7, transform: { position: { x: 4.8, y: 0, z: 2.2 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#e2e8f0', roughness: 0.3, metalness: 0.5, opacity: 1, name: 'Stainless Fridge' } },
+      // Packaging desk
+      { name: 'Packaging Station', catalogId: 'desk', category: 'bedroom', width: 1.0, height: 0.75, depth: 0.6, transform: { position: { x: 4.1, y: 0, z: 1.35 }, rotation: { x: 0, y: 270, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#475569', roughness: 0.7, metalness: 0.1, opacity: 1, name: 'Slate Countertop' } },
+    ]
+  };
+}
+
 export const templateMap: Record<string, () => BuildingTemplate> = {
   'bungalow': getTwoBedBungalow,
   'two-bedroom': getTwoBedBungalow,
@@ -151,4 +218,9 @@ export const templateMap: Record<string, () => BuildingTemplate> = {
   'flat': getStudioApartment,
   'office': getOfficeLayout,
   'workspace': getOfficeLayout,
+  'shop': getFruitShopLayout,
+  'fruit': getFruitShopLayout,
+  'store': getFruitShopLayout,
+  'grocer': getFruitShopLayout,
+  'retail': getFruitShopLayout,
 };

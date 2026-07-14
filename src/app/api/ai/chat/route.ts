@@ -183,14 +183,48 @@ export async function POST(req: Request) {
     const result = await response.json();
     let textResponse = result.choices?.[0]?.message?.content || "";
     
-    // Clean markdown code blocks if the model included them despite instructions
-    textResponse = textResponse.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+    // --- Robust JSON extraction from AI output ---
+    // Step 1: Remove thinking blocks (Gemini 2.5 Pro sometimes wraps reasoning in <think>...</think>)
+    textResponse = textResponse.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    
+    // Step 2: Extract from markdown code fences (```json ... ``` or ``` ... ```)
+    const codeFenceMatch = textResponse.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+    if (codeFenceMatch) {
+      textResponse = codeFenceMatch[1].trim();
+    } else {
+      // Step 3: Strip any leading non-JSON text (preamble) before the first { or [
+      const jsonStartBrace = textResponse.indexOf('{');
+      const jsonStartBracket = textResponse.indexOf('[');
+      let jsonStart = -1;
+      if (jsonStartBrace !== -1 && jsonStartBracket !== -1) {
+        jsonStart = Math.min(jsonStartBrace, jsonStartBracket);
+      } else {
+        jsonStart = jsonStartBrace !== -1 ? jsonStartBrace : jsonStartBracket;
+      }
+      if (jsonStart > 0) {
+        textResponse = textResponse.substring(jsonStart).trim();
+      }
+    }
+
+    // Step 4: Remove trailing text after the last } or ]
+    const lastBrace = textResponse.lastIndexOf('}');
+    const lastBracket = textResponse.lastIndexOf(']');
+    const jsonEnd = Math.max(lastBrace, lastBracket);
+    if (jsonEnd !== -1 && jsonEnd < textResponse.length - 1) {
+      textResponse = textResponse.substring(0, jsonEnd + 1);
+    }
 
     try {
       const aiData = JSON.parse(textResponse);
       return NextResponse.json(aiData);
     } catch (parseError) {
-      return NextResponse.json({ error: "Failed to parse AI JSON response", raw: textResponse }, { status: 500 });
+      // If JSON parsing still fails, return the raw text as a "message" so the user can still see what the AI said
+      // This is better than returning a 500 error which causes the mock parser to run
+      const rawPreview = textResponse.substring(0, 800);
+      return NextResponse.json({
+        message: `I understood your request but couldn't format my response properly. Here's what I tried to say:\n\n${rawPreview}`,
+        mutations: []
+      });
     }
   } catch (error: any) {
     return NextResponse.json(

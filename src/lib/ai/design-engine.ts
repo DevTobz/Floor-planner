@@ -35,6 +35,7 @@ import { useProjectStore } from '@/store/project-store';
 export async function processCommand(input: string, store: StoreActions): Promise<AIResponse> {
   const project = store.project;
 
+  // --- Attempt real AI via /api/ai/chat ---
   try {
     const res = await fetch("/api/ai/chat", {
       method: "POST",
@@ -44,57 +45,70 @@ export async function processCommand(input: string, store: StoreActions): Promis
 
     if (res.ok) {
       const data = await res.json();
+
+      // If the API returned an error field (e.g. JSON parse failure), show it
+      if (data.error) {
+        return {
+          message: `⚠️ AI responded but with an error: ${data.error}${data.raw ? `\n\nRaw AI output:\n${data.raw.substring(0, 500)}` : ""}`,
+          mutations: []
+        };
+      }
+
       const appliedMutations: ProjectMutation[] = [];
 
       if (data.mutations && Array.isArray(data.mutations)) {
         for (const m of data.mutations) {
-          if (m.action === "add") {
-            if (m.type === "room") {
-              const added = store.addRoom(m.data);
-              appliedMutations.push({ action: "add", objectType: "room", objectId: added.id, objectName: added.name });
-            } else if (m.type === "wall") {
-              const added = store.addWall(m.data);
-              appliedMutations.push({ action: "add", objectType: "wall", objectId: added.id, objectName: added.name });
-            } else if (m.type === "door") {
-              const added = store.addDoor(m.data);
-              appliedMutations.push({ action: "add", objectType: "door", objectId: added.id, objectName: added.name });
-            } else if (m.type === "window") {
-              const added = store.addWindow(m.data);
-              appliedMutations.push({ action: "add", objectType: "window", objectId: added.id, objectName: added.name });
-            } else if (m.type === "furniture") {
-              const added = store.addFurniture(m.data);
-              appliedMutations.push({ action: "add", objectType: "furniture", objectId: added.id, objectName: added.name });
+          try {
+            if (m.action === "add") {
+              if (m.type === "room") {
+                const added = store.addRoom(m.data);
+                appliedMutations.push({ action: "add", objectType: "room", objectId: added.id, objectName: added.name });
+              } else if (m.type === "wall") {
+                const added = store.addWall(m.data);
+                appliedMutations.push({ action: "add", objectType: "wall", objectId: added.id, objectName: added.name });
+              } else if (m.type === "door") {
+                const added = store.addDoor(m.data);
+                appliedMutations.push({ action: "add", objectType: "door", objectId: added.id, objectName: added.name });
+              } else if (m.type === "window") {
+                const added = store.addWindow(m.data);
+                appliedMutations.push({ action: "add", objectType: "window", objectId: added.id, objectName: added.name });
+              } else if (m.type === "furniture") {
+                const added = store.addFurniture(m.data);
+                appliedMutations.push({ action: "add", objectType: "furniture", objectId: added.id, objectName: added.name });
+              }
+            } else if (m.action === "delete" && m.id) {
+              if (m.type === "furniture") {
+                store.deleteFurniture(m.id);
+              } else if (m.type === "room") {
+                store.deleteRoom(m.id);
+              } else if (m.type === "wall") {
+                store.deleteWall(m.id);
+              } else if (m.type === "door") {
+                (store as any).deleteDoor?.(m.id);
+              } else if (m.type === "window") {
+                (store as any).deleteWindow?.(m.id);
+              } else if (m.type === "roof") {
+                (store as any).deleteRoof?.(m.id);
+              }
+              appliedMutations.push({ action: "delete", objectType: m.type, objectId: m.id, objectName: m.type });
+            } else if (m.action === "update" && m.id) {
+              if (m.type === "furniture") {
+                useProjectStore.getState().updateFurniture(m.id, m.data);
+              } else if (m.type === "room") {
+                useProjectStore.getState().updateRoom(m.id, m.data);
+              } else if (m.type === "wall") {
+                useProjectStore.getState().updateWall(m.id, m.data);
+              } else if (m.type === "door") {
+                useProjectStore.getState().updateDoor(m.id, m.data);
+              } else if (m.type === "window") {
+                useProjectStore.getState().updateWindow(m.id, m.data);
+              } else if (m.type === "roof") {
+                useProjectStore.getState().updateRoof(m.id, m.data);
+              }
+              appliedMutations.push({ action: "update", objectType: m.type, objectId: m.id, objectName: m.type });
             }
-          } else if (m.action === "delete" && m.id) {
-            if (m.type === "furniture") {
-              store.deleteFurniture(m.id);
-            } else if (m.type === "room") {
-              store.deleteRoom(m.id);
-            } else if (m.type === "wall") {
-              store.deleteWall(m.id);
-            } else if (m.type === "door") {
-              (store as any).deleteDoor?.(m.id);
-            } else if (m.type === "window") {
-              (store as any).deleteWindow?.(m.id);
-            } else if (m.type === "roof") {
-              (store as any).deleteRoof?.(m.id);
-            }
-            appliedMutations.push({ action: "delete", objectType: m.type, objectId: m.id, objectName: m.type });
-          } else if (m.action === "update" && m.id) {
-            if (m.type === "furniture") {
-              useProjectStore.getState().updateFurniture(m.id, m.data);
-            } else if (m.type === "room") {
-              useProjectStore.getState().updateRoom(m.id, m.data);
-            } else if (m.type === "wall") {
-              useProjectStore.getState().updateWall(m.id, m.data);
-            } else if (m.type === "door") {
-              useProjectStore.getState().updateDoor(m.id, m.data);
-            } else if (m.type === "window") {
-              useProjectStore.getState().updateWindow(m.id, m.data);
-            } else if (m.type === "roof") {
-              useProjectStore.getState().updateRoof(m.id, m.data);
-            }
-            appliedMutations.push({ action: "update", objectType: m.type, objectId: m.id, objectName: m.type });
+          } catch (mutationErr) {
+            console.error("Error applying mutation:", m, mutationErr);
           }
         }
       }
@@ -104,11 +118,31 @@ export async function processCommand(input: string, store: StoreActions): Promis
         mutations: appliedMutations
       };
     }
-  } catch (e) {
-    // Ignore and fallback to mock parser
+
+    // API returned a non-OK status — surface the real error
+    let errorMessage = `API error (${res.status})`;
+    try {
+      const errData = await res.json();
+      errorMessage = errData.error || errorMessage;
+    } catch {
+      // couldn't parse error body
+    }
+    return {
+      message: `⚠️ AI service error: ${errorMessage}. Using offline mode instead.`,
+      mutations: []
+    };
+
+  } catch (networkError) {
+    // Only fall back to mock on genuine network failures (e.g. no internet, server down)
+    console.warn("AI API unreachable, using offline mock parser:", networkError);
   }
 
-  return processMockCommand(input, store);
+  // --- Offline fallback (network failure only) ---
+  const mockResponse = processMockCommand(input, store);
+  return {
+    message: `[Offline] ${mockResponse.message}`,
+    mutations: mockResponse.mutations
+  };
 }
 
 export function processMockCommand(input: string, store: StoreActions): AIResponse {

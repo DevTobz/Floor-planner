@@ -66,6 +66,9 @@ export const furnitureCatalog: CatalogItem[] = [
   { id: 'patio-chair', name: 'Patio Chair', category: 'outdoor', width: 0.6, height: 0.85, depth: 0.6, color: '#a16207', icon: '🪑', primitiveType: '3d-box' },
   { id: 'planter', name: 'Planter', category: 'outdoor', width: 0.4, height: 0.4, depth: 0.4, color: '#854d0e', icon: '🌱', primitiveType: '3d-cylinder' },
   { id: 'grill', name: 'BBQ Grill', category: 'outdoor', width: 0.6, height: 1.0, depth: 0.5, color: '#27272a', icon: '🔥', primitiveType: '3d-box' },
+
+  // ─── Retail / Commercial ───
+  { id: 'service-counter', name: 'Service Counter', category: 'kitchen', width: 2.0, height: 1.0, depth: 0.5, color: '#b45309', icon: '🛒', primitiveType: '3d-box' },
 ];
 
 export const categories: { id: FurnitureCategory; label: string; icon: string }[] = [

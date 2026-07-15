@@ -197,6 +197,9 @@ export function getFruitShopLayout(): BuildingTemplate {
       { name: 'Customer Chair 1', catalogId: 'patio-chair', category: 'outdoor', width: 0.5, height: 0.8, depth: 0.5, transform: { position: { x: 2.6, y: 0, z: 2.2 }, rotation: { x: 0, y: 90, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#ffffff', roughness: 0.7, metalness: 0.1, opacity: 1, name: 'White Rattan' } },
       { name: 'Customer Chair 2', catalogId: 'patio-chair', category: 'outdoor', width: 0.5, height: 0.8, depth: 0.5, transform: { position: { x: 3.1, y: 0, z: 1.6 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#ffffff', roughness: 0.7, metalness: 0.1, opacity: 1, name: 'White Rattan' } },
       
+      // Service Counter (customer-facing) — placed along the staff divider wall
+      { name: 'Service Counter', catalogId: 'service-counter', category: 'kitchen', width: 2.0, height: 1.0, depth: 0.5, transform: { position: { x: 3.55, y: 0, z: 1.0 }, rotation: { x: 0, y: 270, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#b45309', roughness: 0.5, metalness: 0.1, opacity: 1, name: 'Warm Walnut Counter' } },
+
       // --- Staff Preparation Area ---
       // Preparation Counter and sink
       { name: 'Fruit Prep Counter', catalogId: 'kitchen-counter', category: 'kitchen', width: 1.8, height: 0.9, depth: 0.6, transform: { position: { x: 4.8, y: 0, z: 0.5 }, rotation: { x: 0, y: 180, z: 0 }, scale: { x: 1, y: 1, z: 1 } }, material: { color: '#f8fafc', roughness: 0.3, metalness: 0.6, opacity: 1, name: 'Stainless Steel Counter' } },

@@ -8,7 +8,7 @@ const apiKeyMatch = envFile.match(/OPENROUTER_API_KEY=(.*)/);
 const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
 
 const modelMatch = envFile.match(/OPENROUTER_MODEL=(.*)/);
-const model = modelMatch ? modelMatch[1].trim() : "google/gemini-2.5-pro";
+const model = modelMatch ? modelMatch[1].trim() : "google/gemini-2.5-flash";
 
 if (!apiKey) {
   console.error("❌ OPENROUTER_API_KEY not found in .env");

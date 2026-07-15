@@ -103,6 +103,9 @@ Only use these valid catalog IDs and default dimensions (width x height x depth 
   - \`patio-chair\` (0.6 x 0.85 x 0.6) - Patio Chair
   - \`planter\` (0.4 x 0.4 x 0.4) - Planter
   - \`grill\` (0.6 x 1.0 x 0.5) - BBQ Grill
+- **Retail / Commercial**:
+  - \`service-counter\` (2.0 x 1.0 x 0.5) - Service Counter
+
 
 CRITICAL: Keep coordinates in meters. Try to keep layouts aligned to a 0.5m grid where possible.
 Always make sure walls align with room corners. If you add a room, add the 4 walls surrounding it!
@@ -118,10 +121,41 @@ When the user asks to scale the environment, layout, or design (e.g., "scale the
 
 You must output ONLY raw JSON. Do not use markdown blocks (\`\`\`json) or add any conversational text outside the JSON object.`;
 
+// Slim down the project data to only what the AI needs for mutations
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function slimProject(project: any): any {
+  if (!project) return null;
+  return {
+    walls: (project.walls || []).map((w: any) => ({
+      id: w.id, name: w.name, start: w.start, end: w.end,
+      thickness: w.thickness, height: w.height
+    })),
+    rooms: (project.rooms || []).map((r: any) => ({
+      id: r.id, name: r.name, label: r.label, corners: r.corners,
+      height: r.height, area: r.area
+    })),
+    doors: (project.doors || []).map((d: any) => ({
+      id: d.id, name: d.name, wallId: d.wallId, width: d.width,
+      height: d.height, offsetAlongWall: d.offsetAlongWall
+    })),
+    windows: (project.windows || []).map((w: any) => ({
+      id: w.id, name: w.name, wallId: w.wallId, width: w.width,
+      height: w.height, sillHeight: w.sillHeight, offsetAlongWall: w.offsetAlongWall
+    })),
+    furniture: (project.furniture || []).map((f: any) => ({
+      id: f.id, name: f.name, catalogId: f.catalogId, category: f.category,
+      width: f.width, height: f.height, depth: f.depth,
+      transform: f.transform
+    })),
+    unit: project.unit,
+    gridSize: project.gridSize,
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const { message, project } = await req.json();
-    
+
     // Check for OpenRouter Key (with direct .env file fallback)
     let openRouterKey = process.env.OPENROUTER_API_KEY;
     let openRouterModel = process.env.OPENROUTER_MODEL;
@@ -146,7 +180,7 @@ export async function POST(req: Request) {
     }
 
     if (!openRouterModel) {
-      openRouterModel = "google/gemini-2.5-pro";
+      openRouterModel = "google/gemini-2.5-flash";
     }
 
     if (!openRouterKey) {
@@ -170,7 +204,7 @@ export async function POST(req: Request) {
         model: openRouterModel,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Current Project State: ${JSON.stringify(project)}\n\nUser Command: ${message}` }
+          { role: "user", content: `Current Project State: ${JSON.stringify(slimProject(project))}\n\nUser Command: ${message}` }
         ]
       })
     });
@@ -182,11 +216,11 @@ export async function POST(req: Request) {
 
     const result = await response.json();
     let textResponse = result.choices?.[0]?.message?.content || "";
-    
+
     // --- Robust JSON extraction from AI output ---
     // Step 1: Remove thinking blocks (Gemini 2.5 Pro sometimes wraps reasoning in <think>...</think>)
     textResponse = textResponse.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-    
+
     // Step 2: Extract from markdown code fences (```json ... ``` or ``` ... ```)
     const codeFenceMatch = textResponse.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
     if (codeFenceMatch) {

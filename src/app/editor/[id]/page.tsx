@@ -736,28 +736,79 @@ function InspectorContent({ details }: { details: InspectorDetails }) {
       )}
 
       {/* Dimensions */}
-      {(details.width || details.height || details.depth) && (
+      {(details.width !== undefined || details.height !== undefined || details.depth !== undefined) && (
         <>
           <hr className="border-[var(--border-default)]" />
           <div>
-            <label className="text-[var(--text-tertiary)] uppercase text-[10px] font-semibold tracking-wider mb-1.5 block">Dimensions</label>
-            <div className="space-y-1">
-              {details.width && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Width</span>
-                  <span className="text-[var(--text-secondary)] font-mono">{details.width.toFixed(2)} m</span>
+            <label className="text-[var(--text-tertiary)] uppercase text-[10px] font-semibold tracking-wider mb-2 block">Dimensions (Meters)</label>
+            <div className="grid grid-cols-3 gap-2">
+              {details.width !== undefined && (
+                <div>
+                  <span className="text-[var(--text-muted)] text-[9px] uppercase block mb-1">Width</span>
+                  <input
+                    type="number"
+                    value={parseFloat(details.width.toFixed(2))}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0.1;
+                      if (details.type === "furniture") {
+                        useProjectStore.getState().updateFurniture(details.id, { width: val });
+                      } else if (details.type === "door") {
+                        useProjectStore.getState().updateDoor(details.id, { width: val });
+                      } else if (details.type === "window") {
+                        useProjectStore.getState().updateWindow(details.id, { width: val });
+                      }
+                    }}
+                    className="input text-[10px] px-1 text-center w-full"
+                    style={{ height: 24 }}
+                    step="0.1"
+                    min="0.1"
+                  />
                 </div>
               )}
-              {details.height && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Height</span>
-                  <span className="text-[var(--text-secondary)] font-mono">{details.height.toFixed(2)} m</span>
+              {details.depth !== undefined && (
+                <div>
+                  <span className="text-[var(--text-muted)] text-[9px] uppercase block mb-1">Depth</span>
+                  <input
+                    type="number"
+                    value={parseFloat(details.depth.toFixed(2))}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0.1;
+                      if (details.type === "furniture") {
+                        useProjectStore.getState().updateFurniture(details.id, { depth: val });
+                      }
+                    }}
+                    className="input text-[10px] px-1 text-center w-full"
+                    style={{ height: 24 }}
+                    step="0.1"
+                    min="0.1"
+                  />
                 </div>
               )}
-              {details.depth && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Depth</span>
-                  <span className="text-[var(--text-secondary)] font-mono">{details.depth.toFixed(2)} m</span>
+              {details.height !== undefined && (
+                <div>
+                  <span className="text-[var(--text-muted)] text-[9px] uppercase block mb-1">Height</span>
+                  <input
+                    type="number"
+                    value={parseFloat(details.height.toFixed(2))}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0.1;
+                      if (details.type === "furniture") {
+                        useProjectStore.getState().updateFurniture(details.id, { height: val });
+                      } else if (details.type === "wall") {
+                        useProjectStore.getState().updateWall(details.id, { height: val });
+                      } else if (details.type === "room") {
+                        useProjectStore.getState().updateRoom(details.id, { height: val });
+                      } else if (details.type === "door") {
+                        useProjectStore.getState().updateDoor(details.id, { height: val });
+                      } else if (details.type === "window") {
+                        useProjectStore.getState().updateWindow(details.id, { height: val });
+                      }
+                    }}
+                    className="input text-[10px] px-1 text-center w-full"
+                    style={{ height: 24 }}
+                    step="0.1"
+                    min="0.1"
+                  />
                 </div>
               )}
             </div>
